@@ -1,34 +1,27 @@
-import { getFromUrl, Loader, PhotoType, scrollPageBy, useModal, UserType } from "@lib";
+import { getFromUrl, Loader, PhotoType, scrollPageBy, useModal } from "@lib";
 import { css } from "@emotion/react";
-import { useRef, useState, useEffect, SetStateAction, Dispatch } from "react";
+import { useRef, useState, useEffect } from "react";
 import { getPhotosByQuery } from "@/lib/utils/getPhotosByQuery";
 import { BREAKPOINT_MEDIUM, BREAKPOINT_MINIMUM_WIDTH } from "@/lib/constants";
 import { PhotoModal } from "@/HomePage/PhotoModal";
-import currentDb from "../../../likedPhotos.json";
-import fs from "vite-plugin-fs/browser";
+import { SetterOrUpdater } from "recoil";
 
 type PhotoGridType = {
-  loggedInUser: UserType;
-  photos: PhotoType[];
   isSearching: boolean;
   searchTerm: string;
-  handleSetPhotos: (newPhotos: PhotoType[]) => void;
-  handleSetLikedPhotos: (lP: { ids: string[]; photos: PhotoType[] }) => void;
+  photos: PhotoType[];
+  setPhotos: SetterOrUpdater<never[]>;
 };
 
 const photoLimit = 10;
 export const PhotoGrid = ({
-  loggedInUser,
-  photos,
   isSearching,
   searchTerm,
-  handleSetPhotos,
-  handleSetLikedPhotos,
+  photos,
+  setPhotos,
 }: PhotoGridType) => {
   //Modal states
   const { visible, handleToggleModal } = useModal();
-  const [isOpen, setIsOpen] = useState(false);
-  const { likedPhotos } = loggedInUser;
 
   // Loading states
   const [loading, setLoading] = useState(true);
@@ -97,12 +90,13 @@ export const PhotoGrid = ({
     if (newPhotos?.length) {
       // Set ref index so we can use it after to properly focus on the latest photo to appear
       // Mostly for accessibility / keyboard navigation
-      firstNewPhotoIndex.current = newPhotos.length - photoLimit || newPhotos.length;
+      firstNewPhotoIndex.current =
+        newPhotos.length - photoLimit || newPhotos.length;
 
       // TODO: fix this to work
       // If we're using the same search term, combine results
       //handleSetPhotos(!searchTerm ? newPhotos : [...photos, newPhotos]);
-      handleSetPhotos(newPhotos);
+      setPhotos(newPhotos);
 
       // If we have less photos than we expect now, we're out of photos and can't grab anymore
       const lessThanExpected = initialLoad ? urlPage * photoLimit : photoLimit;
@@ -113,50 +107,16 @@ export const PhotoGrid = ({
 
     // Update url so we can refresh and get back to the same spot
     if (!initialLoad) {
-      window.history.replaceState("", "", `/?page=${pageToUse.toString()}&term=${searchTerm}`);
+      window.history.replaceState(
+        "",
+        "",
+        `/?page=${pageToUse.toString()}&term=${searchTerm}`
+      );
     } else {
       setInitialLoad(false);
     }
 
     setLoading(false);
-  };
-
-  const handleLovePress = async (photo: PhotoType, isLiked: boolean) => {
-    let newIds: string[] = [];
-    let newPhotos: PhotoType[] = [];
-
-    console.log({ likedPhotos });
-
-    // is currently liked
-    if (isLiked) {
-      newIds = likedPhotos.ids.filter((a) => a !== photo.id);
-      newPhotos = likedPhotos.photos.filter((p) => p.id !== photo.id);
-    } else {
-      newIds = [...likedPhotos.ids, photo.id];
-      newPhotos = [...likedPhotos.photos];
-      newPhotos[photo.id] = photo;
-    }
-
-    console.log({ newPhotos });
-
-    handleSetLikedPhotos({
-      ids: newIds,
-      photos: newPhotos,
-    });
-
-    /*
-    await fs.writeFile(
-      "../../likedPhotos.json",
-      JSON.stringify({
-        ...currentDb,
-        [loggedInUser.id]: {
-          ids: newIds,
-          photos: newPhotos,
-        },
-      })
-    ); */
-
-    console.log({ currentDb });
   };
 
   const renderPhotos = () => {
@@ -165,21 +125,12 @@ export const PhotoGrid = ({
       // As mentioned above in fetch method, set focus on the newest result so a11y works as expected.
       // It is skipped for first page so we can maintain focus on search on load
 
-      const giveFocusRef = isFirstNewResult && photos.length > photoLimit ? focusRef : undefined;
-
-      const isLiked = photo.id === likedPhotos?.ids.length ? likedPhotos.ids.filter((a) => a === photo.id) : false;
+      const giveFocusRef =
+        isFirstNewResult && photos.length > photoLimit ? focusRef : undefined;
 
       return (
         <li css={photoStyle} key={photo.id} ref={giveFocusRef}>
           <img src={photo.urls.thumb} alt={photo.description} />
-          {i + 1 === photos.length && (
-            <PhotoModal
-              isLiked={isLiked}
-              handleClose={() => console.log("close")}
-              handleLovePress={() => handleLovePress(photo, isLiked)}
-              photo={photo}
-            />
-          )}
         </li>
       );
     });
@@ -197,10 +148,16 @@ export const PhotoGrid = ({
       padding: 0;
       justify-content: space-evenly;
       flex-wrap: wrap;
-      grid-template-columns: repeat(auto-fill, calc(${BREAKPOINT_MINIMUM_WIDTH}px - 2rem));
+      grid-template-columns: repeat(
+        auto-fill,
+        calc(${BREAKPOINT_MINIMUM_WIDTH}px - 2rem)
+      );
 
       @media (min-width: ${BREAKPOINT_MEDIUM}) {
-        grid-template-columns: repeat(auto-fill, calc(${BREAKPOINT_MEDIUM}px - 2rem));
+        grid-template-columns: repeat(
+          auto-fill,
+          calc(${BREAKPOINT_MEDIUM}px - 2rem)
+        );
       }
     }
   `;
@@ -225,10 +182,22 @@ export const PhotoGrid = ({
     return <Loader />;
   }
 
+  const photoForModal = photos.find((photo) => photo.id === visible);
+  console.log({ photoForModal });
   return (
-    <div id="PhotoGrid" css={photoGridStyle}>
-      <ul>{renderPhotos()}</ul>
-      {showOutOfPhotos && <p>Out of Photos!</p>}
-    </div>
+    <>
+      <div id="PhotoGrid" css={photoGridStyle}>
+        <ul>{renderPhotos()}</ul>
+        {showOutOfPhotos && <p>Out of Photos!</p>}
+      </div>
+
+      {photoForModal && (
+        <PhotoModal
+          handleClose={handleToggleModal}
+          isOpen={Boolean(visible)}
+          photoForModal={photoForModal}
+        />
+      )}
+    </>
   );
 };

@@ -1,26 +1,26 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { fakeData } from "../../fakeData.json";
-import { PhotoType, UserType, useSearch, UseSearchType } from "@lib";
+import { useSearch, UseSearchType } from "@lib";
 import { PhotoGrid } from "@/HomePage/PhotoGrid";
-import { SearchInput } from "@/HomePage/SearchInput";
 import { css } from "@emotion/react";
 import { UnsplashHeader } from "@/HomePage/UnsplashHeader";
+import { useRecoilState, useRecoilValue } from "recoil";
+import { photosState } from "@/AppEntry";
+import { loggedInUserState } from "@/AppEntry/GlobalStore/loggedInUserState";
 
-type HomePageType = {
-  loggedInUser: UserType;
-};
+export const HomePage = () => {
+  const loggedInUser = useRecoilValue(loggedInUserState);
+  const [photos, setPhotos] = useRecoilState(photosState);
 
-export const HomePage = ({ loggedInUser }: HomePageType) => {
-  const [photos, setPhotos] = useState<PhotoType[]>([]);
-  const handleSetPhotos = (newPhotos: PhotoType[]) => setPhotos(newPhotos);
-
-  // Restore liked photos in state here instead of just using it so we can optimistically update the list w/o
-  // hitting the db before we show "loved"
-  const [likedPhotos, setLikedPhotos] = useState(loggedInUser?.likedPhotos || []);
-  const handleSetLikedPhotos = (lP: PhotoType[]) => setLikedPhotos(lP);
-
-  const { handleSearch, searchResults, isSearching, searchTerm }: UseSearchType = useSearch();
-  const photosToUse = searchResults?.photos?.length ? searchResults.photos : photos;
+  const {
+    handleSearch,
+    searchResults,
+    isSearching,
+    searchTerm,
+  }: UseSearchType = useSearch();
+  const photosToUse = searchResults?.photos?.length
+    ? searchResults.photos
+    : photos;
 
   useEffect(() => {
     console.log(fakeData);
@@ -39,14 +39,16 @@ export const HomePage = ({ loggedInUser }: HomePageType) => {
 
   return (
     <div id="HomePage" css={parentStyles}>
-      <UnsplashHeader handleSearch={handleSearch} isSearching={isSearching} loggedInUser={loggedInUser} />
-      <PhotoGrid
+      <UnsplashHeader
+        handleSearch={handleSearch}
+        isSearching={isSearching}
         loggedInUser={loggedInUser}
-        handleSetLikedPhotos={handleSetLikedPhotos}
+      />
+      <PhotoGrid
         isSearching={isSearching}
         searchTerm={searchTerm}
         photos={photosToUse}
-        handleSetPhotos={handleSetPhotos}
+        setPhotos={setPhotos}
       />
     </div>
   );
