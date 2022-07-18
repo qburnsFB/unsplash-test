@@ -16,6 +16,10 @@ export type LinksType = {
 
 export type PhotoType = {
   id: string;
+  user: {
+    username: string;
+    name: string;
+  };
   created_at: Date;
   updated_at: Date;
   promoted_at?: any;
@@ -25,6 +29,7 @@ export type PhotoType = {
   blur_hash: string;
   description?: any;
   alt_description?: any;
+  likes: number;
   urls: UrlsType;
   links: LinksType;
 };

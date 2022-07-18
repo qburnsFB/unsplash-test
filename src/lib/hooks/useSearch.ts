@@ -1,21 +1,27 @@
 import { useState, useEffect } from "react";
-import { getPhotosByQuery, PhotoType, useDebounce } from "@lib";
+import {
+  getFromUrl,
+  getPhotosByQuery,
+  PhotosByQueryResultsType,
+  useDebounce,
+} from "@lib";
 import { SearchType } from "@/HomePage/SearchInput";
+import { PHOTOS_PER_PAGE } from "@/lib/constants";
 
 export type UseSearchType = {
   handleSearch: ({ queryToSearch }: SearchType) => Promise<void>;
-  searchResults: [
-    {
-      photos: PhotoType[];
-    }
-  ];
+  searchResults: PhotosByQueryResultsType;
   isSearching: boolean;
   searchTerm: string;
 };
 
 export const useSearch = (): UseSearchType => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchResults, setSearchResults] = useState<any>([]);
+  const [searchResults, setSearchResults] = useState<PhotosByQueryResultsType>({
+    photos: [],
+    total: 0,
+    error: [""],
+  });
   const [isSearching, setIsSearching] = useState(false);
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
@@ -25,14 +31,24 @@ export const useSearch = (): UseSearchType => {
   };
 
   const handleSearchPhotos = async () => {
+    // @ts-ignore
+    const { urlPage } = getFromUrl();
     if (debouncedSearchTerm) {
-      const photos = await getPhotosByQuery({
+      const newPhotos: any = await getPhotosByQuery({
         query: debouncedSearchTerm,
+        page: urlPage,
+        perPage: PHOTOS_PER_PAGE,
       });
+
       setIsSearching(false);
-      setSearchResults(photos);
+      // If we're using the same search term, combine results
+      setSearchResults({
+        photos: [...searchResults.photos, ...newPhotos.photos],
+        total: searchResults.photos.length + newPhotos.photos.length,
+        error: newPhotos.errors,
+      });
     } else {
-      setSearchResults([]);
+      setSearchResults({ photos: [], total: 0 });
       setIsSearching(false);
     }
   };

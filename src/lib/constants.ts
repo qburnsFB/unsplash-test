@@ -7,3 +7,5 @@ export const BREAKPOINT_MEDIUM = 576;
 export const BREAKPOINT_LARGE = 768;
 export const BREAKPOINT_XL = 1280;
 export const BREAKPOINT_XXL = 1440;
+
+export const PHOTOS_PER_PAGE = 10;
