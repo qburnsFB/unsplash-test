@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { css } from "@emotion/react";
 import { VERSUS_COLOR_PRIMARY } from "@/lib/constants";
 
@@ -8,12 +8,12 @@ export type SearchType = {
 
 export type SearchInputType = {
   handleSearch: ({ queryToSearch }: SearchType) => Promise<void>;
+  searchRef?: any;
 };
 
-export const SearchInput = ({ handleSearch }: SearchInputType) => {
-  const ref = useRef(null);
+export const SearchInput = ({ handleSearch, searchRef }: SearchInputType) => {
   useEffect(() => {
-    const refToUse = ref?.current as any;
+    const refToUse = searchRef?.current as any;
     refToUse.focus();
   }, []);
 
@@ -31,7 +31,7 @@ export const SearchInput = ({ handleSearch }: SearchInputType) => {
           type="search"
           name="search"
           placeholder="Search..."
-          ref={ref}
+          ref={searchRef}
           css={css`
             margin-top: 0.6rem;
             width: 100%;

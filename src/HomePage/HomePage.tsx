@@ -91,6 +91,7 @@ export const HomePage = () => {
     }
     setShouldUseListFromUrl(!shouldUseListFromUrl);
   };
+
   return (
     <div id="HomePage" css={parentStyles}>
       <UnsplashHeader
@@ -127,7 +128,7 @@ export const HomePage = () => {
             border-color: ${shouldUseListFromUrl ? "transparent" : "#333"};
           `}
         >
-          Liked only
+          Show Liked Only
         </Button>
       </ul>
       <PhotoGrid

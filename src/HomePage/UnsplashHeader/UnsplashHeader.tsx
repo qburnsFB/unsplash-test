@@ -8,6 +8,7 @@ import {
   BREAKPOINT_XXL,
 } from "@/lib/constants";
 import { SearchInput, SearchInputType } from "@/HomePage/SearchInput";
+import { useRef } from "react";
 
 interface UnsplashHeaderType extends SearchInputType {
   loggedInUser: UserType;
@@ -78,7 +79,17 @@ export const UnsplashHeader = ({
     }
   `;
 
-  const handleGoToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+  const handleGoToTop = () => {
+    if (searchRef?.current) {
+      const searchRefCurrent = searchRef.current as any;
+      searchRefCurrent.value = "";
+      searchRefCurrent.focus();
+      window.history.replaceState("", "", "/");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const searchRef = useRef(null);
 
   return (
     <header css={unsplashHeaderStyles}>
@@ -99,7 +110,7 @@ export const UnsplashHeader = ({
           </button>
         </li>
         <li>
-          <SearchInput handleSearch={handleSearch} />
+          <SearchInput searchRef={searchRef} handleSearch={handleSearch} />
         </li>
         <li>
           <p>@{loggedInUser.username}</p>

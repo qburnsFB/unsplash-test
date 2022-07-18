@@ -83,7 +83,8 @@ export const PhotoGrid = ({
       handleFetchPhotos();
     }
 
-    if (urlPage && !initialLoad) {
+    console.log("curr url page", urlPage);
+    if (urlPage > 1 && !initialLoad) {
       // height of photo block is 320, so scroll by the amount that fit on the scree
       const amountFitOnScreen = document.body.clientHeight / 320;
       scrollPageBy(320 * amountFitOnScreen - 200);
@@ -180,6 +181,8 @@ export const PhotoGrid = ({
   const photoForModal = photosToUse.photos.find(
     (photo) => photo.id === visible
   );
+
+  console.log({ photosToUse: photosToUse.isLikedPhotos, urlTerm });
   return (
     <>
       <div id="PhotoGrid" css={photoGridStyle}>
@@ -190,7 +193,7 @@ export const PhotoGrid = ({
           photoForModal={photoForModal}
         />
       </div>
-      {!photosToUse.isLikedPhotos && (
+      {!photosToUse.isLikedPhotos && !urlTerm && (
         <PhotoGridFooter
           showLoader={showLoader}
           showOutOfPhotos={showOutOfPhotos}

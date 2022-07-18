@@ -1,5 +1,4 @@
 import { PhotoType, unsplash } from "@lib";
-import { PHOTOS_PER_PAGE } from "@/lib/constants";
 import { Errors } from "unsplash-js/dist/helpers/errors";
 
 export type PhotosByQueryResultsType = {
@@ -21,7 +20,7 @@ type GetPhotosByQueryType = {
 export const getPhotosByQuery = async ({
   query = "",
   page = 1,
-  perPage = PHOTOS_PER_PAGE,
+  perPage = 10,
   random,
   single,
 }: GetPhotosByQueryType) => {
@@ -32,7 +31,7 @@ export const getPhotosByQuery = async ({
         })
       : await unsplash.search.getPhotos({
           page: page,
-          perPage: single ? perPage : page * perPage,
+          perPage: single ? perPage : query ? 30 : page * perPage,
           query,
         });
 
