@@ -61,7 +61,7 @@ export const HomePage = () => {
   useEffect(() => {
     // @ts-ignore
     // can use this to test app if API key has rate limit expired
-    setPhotos({ photos: fakeData, total: 10 });
+    //setPhotos({ photos: fakeData, total: 10 });
   }, []);
 
   const parentStyles = css`
