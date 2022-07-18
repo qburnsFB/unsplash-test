@@ -6,5 +6,6 @@ export const getFromUrl = () => {
   const urlParams = new URLSearchParams(queryString);
   const page = urlParams.get("page") || "1";
   const term = urlParams.get("term");
-  return { urlPage: parseInt(page), urlTerm: term };
+  const viewUserLikes = urlParams.get("viewUserLikes");
+  return { urlPage: parseInt(page), urlTerm: term, viewUserLikes };
 };

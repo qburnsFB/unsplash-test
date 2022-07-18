@@ -1,2 +1,2 @@
-export * from "./Photos";
+export * from "./PhotosType";
 export * from "./UserType";
